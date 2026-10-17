@@ -26,10 +26,10 @@ import {
   QUICK_SITUATIONS,
   TRUST_METRICS_PLACEHOLDER,
   CONSULTATION_STEPS,
-  WHATSAPP_URL,
   Z_INDEX_SCALE,
   type QuickSituation,
 } from "@/components/legal-data";
+import { buildWhatsAppUrl, DEFAULT_WHATSAPP_GREETING } from "@/lib/contact";
 
 function renderSituationIcon(iconName: QuickSituation["iconName"]) {
   switch (iconName) {
@@ -81,7 +81,7 @@ export default function HomePage() {
                   </a>
 
                   <a
-                    href={WHATSAPP_URL}
+                    href={buildWhatsAppUrl(DEFAULT_WHATSAPP_GREETING)}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-2.5 rounded-full border border-[#0e1e32] bg-[#0e1e32] px-6 py-3.5 text-sm font-semibold text-[#faf9f6] hover:bg-[#182f4c] active:scale-[0.98] transition-transform duration-200 whitespace-nowrap focus:outline-none focus-visible:ring-2 focus-visible:ring-[#c24b16] focus-visible:ring-offset-2"
@@ -431,16 +431,19 @@ export default function HomePage() {
                       </h3>
                       {/* PLACEHOLDER: Número telefónico de contacto ilustrativo */}
                       <p className="font-mono text-xs text-[#cbd2dc]">
-                        +57 (300) 000 0000 · Lunes a viernes, 8:00 a. m. a 6:00 p. m.
+                        +57 (300) 000 0000 (PLACEHOLDER) · Lunes a viernes, 8:00 a. m. a 6:00 p. m.
                       </p>
                     </div>
                   </div>
-                  <p className="mt-4 text-xs sm:text-sm text-[#cbd2dc] leading-relaxed">
-                    Canal ilustrativo para verificar disponibilidad de agenda o confirmar qué documentos reunir antes de su sesión diagnóstica.
+                  <p className="mt-3 rounded-lg bg-white/10 px-3.5 py-2.5 text-xs text-[#f8f7f3] leading-relaxed border border-white/15">
+                    Nota importante: Este número de WhatsApp es un ejemplo ficticio (PLACEHOLDER) y el enlace no se comunicará con una firma real hasta configurar el número definitivo.
+                  </p>
+                  <p className="mt-3 text-xs sm:text-sm text-[#cbd2dc] leading-relaxed">
+                    Canal directo para verificar disponibilidad de agenda o confirmar qué documentos reunir antes de su sesión diagnóstica.
                   </p>
                   <div className="mt-5">
                     <a
-                      href={WHATSAPP_URL}
+                      href={buildWhatsAppUrl(DEFAULT_WHATSAPP_GREETING)}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="inline-flex items-center gap-2 rounded-full bg-[#c24b16] px-6 py-3 text-xs sm:text-sm font-semibold text-[#faf9f6] hover:bg-[#a63d0f] active:scale-[0.98] transition-transform duration-200 whitespace-nowrap focus:outline-none focus-visible:ring-2 focus-visible:ring-[#c24b16]"
@@ -614,15 +617,28 @@ export default function HomePage() {
 
             <div className="lg:col-span-4 space-y-2.5">
               <div className="text-xs font-semibold text-[#f8f7f3]">
-                Aviso de Privacidad y Uso de Datos
+                Aviso sobre Privacidad y Envío por WhatsApp
               </div>
               <p className="text-xs text-[#98a4b5] leading-relaxed">
-                Los datos de contacto suministrados voluntariamente en este sitio se utilizan únicamente para atender solicitudes de información o agendar consultas. Usted puede solicitar en cualquier momento la actualización, rectificación o eliminación de sus datos escribiendo al correo de ejemplo{" "}
-                <span className="font-mono text-[#cbd2dc]">privacidad@valdesrueda.co</span>.
+                Este sitio web no cuenta con base de datos ni servidor propio para almacenar información personal. Cuando usted utiliza el formulario de consulta, el navegador prepara un enlace hacia WhatsApp y el mensaje solo se envía si usted decide remitirlo dentro de esa aplicación.
               </p>
-              {/* PLACEHOLDER: Dirección física ilustrativa */}
+              {/* PLACEHOLDER: Dirección física y WhatsApp ilustrativos */}
               <p className="font-mono text-xs text-[#cbd2dc] pt-1">
                 Dirección de ejemplo (Placeholder): Calle 72 # 9-55, Of. 602, Bogotá D.C.
+              </p>
+              <p className="text-xs text-[#cbd2dc] pt-1">
+                <a
+                  href={buildWhatsAppUrl(DEFAULT_WHATSAPP_GREETING)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline hover:text-[#faf9f6] transition-colors"
+                >
+                  WhatsApp +57 (300) 000 0000 (PLACEHOLDER)
+                </a>
+                {" · "}
+                <span className="text-[#98a4b5]">
+                  Número de ejemplo; el enlace no se comunicará con una firma real.
+                </span>
               </p>
             </div>
           </div>

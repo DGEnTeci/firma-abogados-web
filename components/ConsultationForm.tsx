@@ -1,6 +1,6 @@
 "use client";
 
-import React, { memo, useState, useEffect, useRef } from "react";
+import React, { memo, useState } from "react";
 import {
   ArrowRight,
   CheckCircle,
@@ -8,13 +8,13 @@ import {
   LockKey,
   FileText,
   ArrowCounterClockwise,
+  WhatsappLogo,
 } from "@phosphor-icons/react";
 import { PRACTICE_AREAS } from "./legal-data";
+import { buildWhatsAppUrl } from "@/lib/contact";
 
 interface FormValues {
   fullName: string;
-  phone: string;
-  email: string;
   practiceArea: string;
   modality: string;
   summary: string;
@@ -23,8 +23,6 @@ interface FormValues {
 
 interface FormErrors {
   fullName?: string;
-  phone?: string;
-  email?: string;
   practiceArea?: string;
   summary?: string;
   privacyAccepted?: string;
@@ -32,41 +30,23 @@ interface FormErrors {
 
 const INITIAL_VALUES: FormValues = {
   fullName: "",
-  phone: "",
-  email: "",
   practiceArea: "",
   modality: "presencial-bogota",
   summary: "",
   privacyAccepted: false,
 };
 
+const MAX_SUMMARY_LENGTH = 500;
+
 export const ConsultationForm = memo(function ConsultationForm() {
   const [values, setValues] = useState<FormValues>(INITIAL_VALUES);
   const [errors, setErrors] = useState<FormErrors>({});
-  const [status, setStatus] = useState<"idle" | "loading" | "submitted">("idle");
-  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  useEffect(() => {
-    return () => {
-      if (timerRef.current) {
-        clearTimeout(timerRef.current);
-      }
-    };
-  }, []);
+  const [submittedUrl, setSubmittedUrl] = useState<string | null>(null);
 
   const validate = (): FormErrors => {
     const nextErrors: FormErrors = {};
     if (!values.fullName.trim() || values.fullName.trim().length < 3) {
       nextErrors.fullName = "Por favor ingrese su nombre y apellido completos.";
-    }
-    if (!values.phone.trim() || values.phone.trim().length < 7) {
-      nextErrors.phone = "Ingrese un número de celular o teléfono fijo válido en Colombia.";
-    }
-    if (
-      !values.email.trim() ||
-      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(values.email.trim())
-    ) {
-      nextErrors.email = "Ingrese un correo electrónico válido para enviarle la confirmación.";
     }
     if (!values.practiceArea) {
       nextErrors.practiceArea = "Seleccione el área jurídica que mejor describe su consulta.";
@@ -77,7 +57,7 @@ export const ConsultationForm = memo(function ConsultationForm() {
     }
     if (!values.privacyAccepted) {
       nextErrors.privacyAccepted =
-        "Debe aceptar el aviso de privacidad y uso de datos de contacto.";
+        "Debe confirmar que comprende que el mensaje se prepara para WhatsApp y que el sitio es informativo.";
     }
     return nextErrors;
   };
@@ -91,16 +71,32 @@ export const ConsultationForm = memo(function ConsultationForm() {
       return;
     }
 
-    setStatus("loading");
-    timerRef.current = setTimeout(() => {
-      setStatus("submitted");
-    }, 900);
+    const areaTitle =
+      PRACTICE_AREAS.find((a) => a.id === values.practiceArea)?.title ??
+      "Derecho General";
+    const modalityLabel =
+      values.modality === "presencial-bogota"
+        ? "Presencial en Bogotá (Chapinero)"
+        : "Consulta virtual por videollamada";
+    const truncatedSummary = values.summary.trim().slice(0, MAX_SUMMARY_LENGTH);
+
+    const message = [
+      "Hola, quisiera agendar una consulta.",
+      `Nombre: ${values.fullName.trim()}`,
+      `Área: ${areaTitle}`,
+      `Modalidad: ${modalityLabel}`,
+      `Resumen: ${truncatedSummary}`,
+    ].join("\n");
+
+    const url = buildWhatsAppUrl(message);
+    window.open(url, "_blank", "noopener,noreferrer");
+    setSubmittedUrl(url);
   };
 
   const handleReset = () => {
     setValues(INITIAL_VALUES);
     setErrors({});
-    setStatus("idle");
+    setSubmittedUrl(null);
   };
 
   const hasDraftContent =
@@ -108,28 +104,7 @@ export const ConsultationForm = memo(function ConsultationForm() {
     Boolean(values.practiceArea) ||
     Boolean(values.summary.trim());
 
-  if (status === "loading") {
-    /* Estado de carga esquelético (Skeletal loader acorde a la forma final, sin spinners circulares) */
-    return (
-      <div
-        role="status"
-        aria-live="polite"
-        aria-label="Simulando el envío de su solicitud de consulta jurídica"
-        className="rounded-xl border border-[var(--border-subtle)] bg-[var(--surface-elevated)] p-6 sm:p-8 space-y-6"
-      >
-        <div className="h-6 w-2/3 rounded-lg bg-[var(--surface-secondary)] animate-pulse" />
-        <div className="h-4 w-full rounded-lg bg-[var(--surface-secondary)] animate-pulse" />
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
-          <div className="h-12 w-full rounded-lg bg-[var(--surface-secondary)] animate-pulse" />
-          <div className="h-12 w-full rounded-lg bg-[var(--surface-secondary)] animate-pulse" />
-        </div>
-        <div className="h-24 w-full rounded-lg bg-[var(--surface-secondary)] animate-pulse" />
-        <div className="h-11 w-48 rounded-full bg-[#c24b16]/40 animate-pulse" />
-      </div>
-    );
-  }
-
-  if (status === "submitted") {
+  if (submittedUrl) {
     return (
       <div
         role="status"
@@ -140,31 +115,40 @@ export const ConsultationForm = memo(function ConsultationForm() {
           <CheckCircle size={28} weight="fill" />
         </div>
         <h3 className="mt-4 text-2xl font-semibold text-[var(--text-primary)]">
-          Envío simulado en el navegador (Formulario de demostración)
+          Su mensaje está listo en WhatsApp
         </h3>
         <p className="mt-2 text-sm sm:text-base text-[var(--text-secondary)] leading-relaxed">
-          Estimado(a) <span className="font-semibold text-[var(--text-primary)]">{values.fullName}</span>, esta confirmación es una{" "}
-          <span className="font-semibold text-[var(--text-primary)]">
-            simulación local en el navegador (placeholder)
-          </span>
-          . El formulario no está conectado a un servidor ni envía correos electrónicos reales para el área de{" "}
+          Estimado(a) <span className="font-semibold text-[var(--text-primary)]">{values.fullName}</span>, se ha abierto una ventana de WhatsApp con el resumen de su consulta sobre{" "}
           <span className="font-semibold text-[var(--text-primary)]">
             {PRACTICE_AREAS.find((a) => a.id === values.practiceArea)?.title ?? "Derecho General"}
           </span>
-          .
+          . Recuerde que usted debe pulsar el botón de enviar dentro de WhatsApp para que el mensaje llegue a la firma.
         </p>
 
-        <div className="mt-6 rounded-xl bg-[var(--surface-secondary)] p-4 border border-[var(--border-subtle)] font-mono text-xs text-[var(--text-primary)] space-y-1">
-          <div>Estado técnico: Simulación cliente (setTimeout de 900 ms en memoria local)</div>
-          <div>Modalidad elegida: {values.modality === "presencial-bogota" ? "Presencial en Bogotá (Chapinero)" : "Sesión virtual nacional"}</div>
-          <div>Nota: No se han transmitido ni almacenado sus datos fuera de su navegador.</div>
+        <div className="mt-5 rounded-xl bg-[var(--surface-secondary)] p-4 border border-[var(--border-subtle)] text-xs text-[var(--text-secondary)] space-y-2">
+          <p className="font-medium text-[var(--text-primary)]">
+            Nota sobre el número de demostración (PLACEHOLDER):
+          </p>
+          <p>
+            El número configurado actualmente (+57 300 000 0000) es un número de ejemplo y el enlace no se comunicará con una firma real hasta que se configure el número definitivo.
+          </p>
         </div>
 
-        <div className="mt-6">
+        <div className="mt-6 flex flex-wrap items-center gap-3">
+          <a
+            href={submittedUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 rounded-full bg-[#c24b16] px-6 py-3 text-xs sm:text-sm font-semibold text-[#faf9f6] hover:bg-[#a63d0f] active:scale-[0.98] transition-transform duration-200 whitespace-nowrap focus:outline-none focus-visible:ring-2 focus-visible:ring-[#c24b16]"
+          >
+            <WhatsappLogo size={18} weight="fill" />
+            <span>Si no se abrió WhatsApp, pulse aquí</span>
+          </a>
+
           <button
             type="button"
             onClick={handleReset}
-            className="inline-flex items-center gap-2 rounded-full border border-[var(--border-subtle)] px-5 py-2.5 text-xs font-semibold text-[var(--text-primary)] hover:bg-[var(--surface-secondary)] active:scale-[0.98] whitespace-nowrap"
+            className="inline-flex items-center gap-2 rounded-full border border-[var(--border-subtle)] px-5 py-3 text-xs font-semibold text-[var(--text-primary)] hover:bg-[var(--surface-secondary)] active:scale-[0.98] whitespace-nowrap"
           >
             <ArrowCounterClockwise size={16} weight="bold" />
             <span>Volver al formulario</span>
@@ -185,12 +169,9 @@ export const ConsultationForm = memo(function ConsultationForm() {
           <h3 className="text-xl font-semibold text-[var(--text-primary)]">
             Formulario de valoración inicial
           </h3>
-          <span className="font-mono text-[11px] font-semibold text-[#c24b16]">
-            DEMOSTRACIÓN / SIMULADO
-          </span>
         </div>
         <p className="mt-1 text-xs sm:text-sm text-[var(--text-secondary)]">
-          Complete los siguientes datos. No necesita utilizar terminología técnica. (Formulario demostrativo sin envío a servidor).
+          Complete su nombre, el área jurídica, la modalidad y un resumen breve para preparar su mensaje de consulta por WhatsApp. No necesita utilizar terminología técnica.
         </p>
       </div>
 
@@ -202,7 +183,7 @@ export const ConsultationForm = memo(function ConsultationForm() {
             <span className="font-semibold text-[var(--text-primary)]">
               Resumen de expediente aún vacío:
             </span>{" "}
-            A medida que diligencie su nombre, el área jurídica y el relato breve de los hechos, prepararemos su ficha de valoración preliminar.
+            A medida que diligencie su nombre, el área jurídica y el relato breve de los hechos, prepararemos su mensaje de solicitud de consulta.
           </div>
         </div>
       ) : (
@@ -252,76 +233,6 @@ export const ConsultationForm = memo(function ConsultationForm() {
             >
               <WarningCircle size={15} weight="fill" className="shrink-0" />
               <span>{errors.fullName}</span>
-            </p>
-          )}
-        </div>
-
-        {/* Teléfono / WhatsApp */}
-        <div className="flex flex-col gap-2">
-          <label
-            htmlFor="phone"
-            className="text-sm font-semibold text-[var(--text-primary)]"
-          >
-            Teléfono celular o WhatsApp
-          </label>
-          <span className="text-xs text-[var(--text-muted)]">
-            En Colombia (ej. 310 000 0000)
-          </span>
-          <input
-            id="phone"
-            name="phone"
-            type="tel"
-            autoComplete="tel"
-            value={values.phone}
-            onChange={(e) => setValues({ ...values, phone: e.target.value })}
-            aria-invalid={Boolean(errors.phone)}
-            aria-describedby={errors.phone ? "error-phone" : undefined}
-            className="w-full rounded-lg border border-[var(--border-subtle)] bg-[var(--surface-primary)] px-3.5 py-2.5 text-sm text-[var(--text-primary)] focus:border-[#c24b16] focus:outline-none focus:ring-2 focus:ring-[#c24b16]/30"
-          />
-          {errors.phone && (
-            <p
-              id="error-phone"
-              role="alert"
-              className="flex items-center gap-1.5 text-xs font-medium text-[#b91c1c]"
-            >
-              <WarningCircle size={15} weight="fill" className="shrink-0" />
-              <span>{errors.phone}</span>
-            </p>
-          )}
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-        {/* Correo electrónico */}
-        <div className="flex flex-col gap-2">
-          <label
-            htmlFor="email"
-            className="text-sm font-semibold text-[var(--text-primary)]"
-          >
-            Correo electrónico
-          </label>
-          <span className="text-xs text-[var(--text-muted)]">
-            Para enviarle la confirmación escrita
-          </span>
-          <input
-            id="email"
-            name="email"
-            type="email"
-            autoComplete="email"
-            value={values.email}
-            onChange={(e) => setValues({ ...values, email: e.target.value })}
-            aria-invalid={Boolean(errors.email)}
-            aria-describedby={errors.email ? "error-email" : undefined}
-            className="w-full rounded-lg border border-[var(--border-subtle)] bg-[var(--surface-primary)] px-3.5 py-2.5 text-sm text-[var(--text-primary)] focus:border-[#c24b16] focus:outline-none focus:ring-2 focus:ring-[#c24b16]/30"
-          />
-          {errors.email && (
-            <p
-              id="error-email"
-              role="alert"
-              className="flex items-center gap-1.5 text-xs font-medium text-[#b91c1c]"
-            >
-              <WarningCircle size={15} weight="fill" className="shrink-0" />
-              <span>{errors.email}</span>
             </p>
           )}
         </div>
@@ -397,17 +308,18 @@ export const ConsultationForm = memo(function ConsultationForm() {
         >
           ¿Qué ocurrió y qué fecha o plazo tiene presente?
         </label>
-        <span className="text-xs text-[var(--text-muted)]">
-          Relate brevemente su inquietud con sus propias palabras
+        <span id="hint-summary" className="text-xs text-[var(--text-muted)] leading-relaxed">
+          Relate brevemente su inquietud con sus propias palabras (máximo {MAX_SUMMARY_LENGTH} caracteres). Por su seguridad, no incluya números de cédula, datos bancarios ni otros documentos o datos sensibles en este primer mensaje.
         </span>
         <textarea
           id="summary"
           name="summary"
           rows={4}
+          maxLength={MAX_SUMMARY_LENGTH}
           value={values.summary}
           onChange={(e) => setValues({ ...values, summary: e.target.value })}
           aria-invalid={Boolean(errors.summary)}
-          aria-describedby={errors.summary ? "error-summary" : undefined}
+          aria-describedby={errors.summary ? "hint-summary error-summary" : "hint-summary"}
           className="w-full rounded-lg border border-[var(--border-subtle)] bg-[var(--surface-primary)] px-3.5 py-2.5 text-sm text-[var(--text-primary)] focus:border-[#c24b16] focus:outline-none focus:ring-2 focus:ring-[#c24b16]/30"
         />
         {errors.summary && (
@@ -441,7 +353,7 @@ export const ConsultationForm = memo(function ConsultationForm() {
             htmlFor="privacyAccepted"
             className="text-xs text-[var(--text-secondary)] leading-relaxed"
           >
-            Acepto el aviso de privacidad. Entiendo que este formulario es una demostración interactiva (simulada en el navegador) y que el contenido del sitio tiene carácter informativo y no constituye asesoría jurídica.
+            Comprendo que este sitio web no almacena ni procesa mis datos en un servidor, que al continuar se abrirá WhatsApp con mi mensaje preparado y que el contenido publicado tiene carácter informativo y no constituye asesoría jurídica.
           </label>
         </div>
         {errors.privacyAccepted && (
@@ -456,12 +368,15 @@ export const ConsultationForm = memo(function ConsultationForm() {
         )}
       </div>
 
-      <div className="pt-2 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="flex items-center gap-2 text-xs text-[var(--text-muted)]">
-          <LockKey size={16} weight="regular" className="shrink-0 text-[#c24b16]" />
-          <span>Envío simulado en navegador. Contenido informativo, no es asesoría legal.</span>
-        </div>
+      {/* Aviso neutro encima del botón de envío sobre cómo funciona la apertura de WhatsApp */}
+      <div className="rounded-xl bg-[var(--surface-secondary)] p-4 border border-[var(--border-subtle)] flex items-start gap-2.5 text-xs text-[var(--text-secondary)] leading-relaxed">
+        <LockKey size={16} weight="regular" className="mt-0.5 shrink-0 text-[#c24b16]" />
+        <span>
+          Al pulsar el botón se abrirá WhatsApp con su mensaje preparado. El mensaje solo se enviará cuando usted pulse enviar dentro de WhatsApp y será atendido a través de esa aplicación. (El número actual es de ejemplo / PLACEHOLDER y no se comunicará con una firma real).
+        </span>
+      </div>
 
+      <div className="pt-1 flex justify-end">
         <button
           type="submit"
           className="inline-flex items-center justify-center gap-2 rounded-full bg-[#c24b16] px-7 py-3.5 text-sm font-semibold text-[#faf9f6] hover:bg-[#a63d0f] active:scale-[0.98] transition-transform duration-200 whitespace-nowrap focus:outline-none focus-visible:ring-2 focus-visible:ring-[#c24b16] focus-visible:ring-offset-2"

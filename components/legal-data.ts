@@ -14,10 +14,6 @@ export const Z_INDEX_SCALE = {
   modalDialog: "z-50",
 } as const;
 
-/* PLACEHOLDER: Número de WhatsApp de contacto ilustrativo para Valdés & Rueda Abogados */
-export const WHATSAPP_URL =
-  "https://wa.me/573000000000?text=Hola%2C%20quisiera%20agendar%20una%20consulta%20jur%C3%ADdica%20con%20Vald%C3%A9s%20%26%20Rueda%20Abogados.";
-
 export interface QuickSituation {
   id: string;
   question: string;
@@ -404,8 +400,8 @@ export const FAQ_ITEMS: FaqItem[] = [
   },
   {
     id: "faq-privacidad",
-    question: "¿Cómo se maneja la información que comparto en el formulario?",
+    question: "¿Cómo se maneja la información que escribo en el formulario?",
     answer:
-      "La información enviada a través de los formularios de este sitio tiene carácter confidencial y se utiliza únicamente para responder a su solicitud de orientación y coordinar el agendamiento de su consulta.",
+      "Este sitio web no almacena ni guarda en servidores los datos que usted escribe en el formulario. Al pulsar el botón de envío, su propio navegador prepara el texto y abre WhatsApp para que usted revise el mensaje y decida enviarlo directamente a través de esa aplicación.",
   },
 ];

@@ -1,21 +1,12 @@
 "use client";
 
-import React, { memo, useState, useEffect, useRef } from "react";
+import React, { memo, useState } from "react";
 import { CheckCircle, WarningCircle, EnvelopeSimple } from "@phosphor-icons/react";
 
 export const NewsletterForm = memo(function NewsletterForm() {
   const [email, setEmail] = useState("");
   const [error, setError] = useState("");
-  const [status, setStatus] = useState<"idle" | "loading" | "subscribed">("idle");
-  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  useEffect(() => {
-    return () => {
-      if (timerRef.current) {
-        clearTimeout(timerRef.current);
-      }
-    };
-  }, []);
+  const [status, setStatus] = useState<"idle" | "subscribed">("idle");
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -24,24 +15,8 @@ export const NewsletterForm = memo(function NewsletterForm() {
       return;
     }
     setError("");
-    setStatus("loading");
-    timerRef.current = setTimeout(() => {
-      setStatus("subscribed");
-    }, 650);
+    setStatus("subscribed");
   };
-
-  if (status === "loading") {
-    return (
-      <div
-        role="status"
-        aria-live="polite"
-        className="w-full max-w-md space-y-2"
-      >
-        <div className="h-4 w-48 rounded bg-white/15 animate-pulse" />
-        <div className="h-12 w-full rounded-full bg-white/15 animate-pulse" />
-      </div>
-    );
-  }
 
   if (status === "subscribed") {
     return (
@@ -52,7 +27,7 @@ export const NewsletterForm = memo(function NewsletterForm() {
       >
         <CheckCircle size={22} weight="fill" className="shrink-0 text-[#c24b16]" />
         <span>
-          Suscripción de demostración registrada para <strong className="font-mono">{email}</strong>.
+          Demostración visual: no se envió ni almacenó el correo <strong className="font-mono">{email}</strong> porque este boletín es solo un ejemplo de diseño sin servidor.
         </span>
       </div>
     );
@@ -64,10 +39,10 @@ export const NewsletterForm = memo(function NewsletterForm() {
         htmlFor="newsletter-email"
         className="text-sm font-semibold text-[#f8f7f3]"
       >
-        Correo electrónico para recibir guías y notas informativas
+        Correo electrónico para recibir guías y notas informativas (Ejemplo / Placeholder)
       </label>
       <span className="text-xs text-[#cbd2dc]">
-        Aviso de privacidad: Su correo solo se usa para el envío de notas pedagógicas y puede darse de baja en cualquier momento.
+        Nota: Este campo de boletín es una maqueta visual sin conexión a servidor; no almacena su correo ni envía mensajes reales.
       </span>
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 mt-1">
         <div className="relative flex-1">

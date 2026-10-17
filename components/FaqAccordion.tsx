@@ -3,7 +3,8 @@
 import React, { memo, useState } from "react";
 import { motion, AnimatePresence, useReducedMotion } from "motion/react";
 import { Plus, Minus, WhatsappLogo } from "@phosphor-icons/react";
-import { FAQ_ITEMS, WHATSAPP_URL } from "./legal-data";
+import { FAQ_ITEMS } from "./legal-data";
+import { buildWhatsAppUrl } from "@/lib/contact";
 
 export const FaqAccordion = memo(function FaqAccordion() {
   const [openId, setOpenId] = useState<string | null>(FAQ_ITEMS[0].id);
@@ -87,11 +88,13 @@ export const FaqAccordion = memo(function FaqAccordion() {
             ¿Su inquietud involucra un plazo próximo a vencer?
           </p>
           <p className="mt-1 text-xs sm:text-sm text-[var(--text-secondary)]">
-            Escríbanos para verificar la fecha límite de respuesta (canal de ejemplo / placeholder).
+            Escríbanos para verificar la fecha límite de respuesta (número de ejemplo / placeholder: el enlace no se comunicará con una firma real).
           </p>
         </div>
         <a
-          href={WHATSAPP_URL}
+          href={buildWhatsAppUrl(
+            "Hola, tengo una consulta con un plazo próximo a vencer y quisiera orientación inicial."
+          )}
           target="_blank"
           rel="noopener noreferrer"
           className="inline-flex items-center justify-center gap-2 rounded-full border border-[#0e1e32] bg-[#0e1e32] px-5 py-2.5 text-xs font-semibold text-[#faf9f6] hover:bg-[#c24b16] hover:border-[#c24b16] active:scale-[0.98] transition-colors duration-200 whitespace-nowrap focus:outline-none focus-visible:ring-2 focus-visible:ring-[#c24b16]"
