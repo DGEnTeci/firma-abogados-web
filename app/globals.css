@@ -1,0 +1,58 @@
+@import "tailwindcss";
+
+:root {
+  --surface-primary: #f8f7f3;
+  --surface-secondary: #f0ede6;
+  --surface-elevated: #fcfbf9;
+  --surface-navy: #0e1e32;
+  --surface-navy-deep: #091524;
+  --text-primary: #0e1e32;
+  --text-secondary: #3e4c5e;
+  --text-muted: #596778;
+  --border-subtle: #dedad0;
+  --accent-cta: #c24b16;
+  --accent-cta-hover: #a63d0f;
+}
+
+@theme inline {
+  --color-background: var(--surface-primary);
+  --color-foreground: var(--text-primary);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+html {
+  scroll-behavior: smooth;
+  color-scheme: light;
+}
+
+body {
+  background-color: var(--surface-primary);
+  color: var(--text-primary);
+  font-family: var(--font-geist-sans), system-ui, -apple-system, sans-serif;
+}
+
+@media (min-width: 1024px) {
+  .hero-diagonal-clip {
+    clip-path: polygon(14% 0%, 100% 0%, 100% 100%, 0% 100%);
+  }
+
+  .footer-diagonal-accent {
+    clip-path: polygon(24% 0%, 100% 0%, 100% 100%, 0% 100%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
